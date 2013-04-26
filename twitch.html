@@ -1,0 +1,192 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.jeditable.mini.js"></script>
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+<style type="text/css">
+#twitch-question-ui 
+{ 
+	position: absolute; 
+	margin-left: 500px; 
+	width: 250px
+}
+#twitch-question-ui p 
+{ 
+	background-color: red; 
+	height: 40px; 
+	padding-top: 8px; 
+	padding-left: 8px; 
+	cursor: pointer; 
+	font-variant: small-caps; 
+	display: block;
+	font-size: 15px; 
+	margin: 0; 
+}
+
+#twitch-question-ui #answers-list .delete
+{
+	cursor:pointer;
+}
+#twitch-question-ui input
+{
+	height: 30px; 
+	width: 223px
+}
+</style>
+<script type="text/javascript">
+$(document).ready(
+	function ()
+	{
+		/*
+		** Global
+		*/
+		var questionIsStarted = false;
+		var nbVote = 0;
+		var a_possibleAnswers = new Array();
+		var a_userAnswersCount = new Array();
+		var a_userName = new Array();
+	
+		/*
+		** Start listening answer
+		*/
+		var startListening = function ()
+		{
+			$("#list").bind("DOMNodeInserted", function(e) {
+				var insertValue = e.target.innerText.toLowerCase();
+				var user = e.target.dataset.sender;
+				var pos;
+				if ((pos = $.inArray(insertValue, a_possibleAnswers)) >= 0 && $.inArray(user, a_userName) == -1)
+				{
+					a_userAnswersCount[pos]++;
+					$(".q_"+ pos).next().text(a_userAnswersCount[pos]);
+					a_userName.push(user);
+				}
+			});
+		}
+
+		/*
+		** Stop listening answer
+		*/
+		var stopListening = function ()
+		{
+			$("#list").unbind("DOMNodeInserted");
+		}
+
+		/*
+		** Init UI Listener
+		*/
+		var initUIListener = function ()
+		{
+			/*
+			 * Start / Stop question
+			 */
+			$("#btn-start").on("click", function()
+			{
+				if (a_possibleAnswers.length > 0)
+				{					
+					questionIsStarted = !questionIsStarted;
+					if (questionIsStarted)
+					{
+						startListening();					
+						$(this).removeClass("btn-danger").addClass("btn-success");
+						$(this).find("span.value").text("stop");
+					}
+					else
+					{
+						stopListening();
+						$(this).addClass("btn-danger").removeClass("btn-success");
+						$(this).find("span.value").text("start");
+					} 
+				}
+				else
+					alert("You have to define some answers first.");
+			});
+
+			/*
+			 * Create / Edit question
+			 */
+			$('#change-question').editable(
+				function(value, settings)
+				{
+					return (value);
+				}, { 
+					event		: 'click',
+					cancel 		: 'Cancel',
+					submit		: 'OK',
+					indicator	: 'Saving..'
+		    	}
+		   	);
+
+		   	/*
+		   	 * Create answer
+		   	 */
+			$("form#add-answer").on("submit", function(e)
+			{
+				var value = $("input#add-answer-value").val();
+				var num = a_possibleAnswers.length
+				$("#answers-list tbody").append('<tr><td class="q_'+ num +'">'+ value +'</td><td class="count">0</td><td class="delete"><i class="icon-remove"></i></td></tr>');
+				a_possibleAnswers.push(value.toLowerCase());	
+				a_userAnswersCount.push(0);	   	
+				$("input#add-answer-value").val("");
+				return false;
+			});
+
+			/*
+			 * Delete answer
+			 */
+			$("table#answers-list i").on("click", function()
+			{
+				console.log("aze");
+			});
+		}
+
+
+
+		var initUI = function ()
+		{
+			$('body').prepend('<div id="twitch-question-ui"></div>');
+			$('#twitch-question-ui').append('<p id="btn-start" style="color:'+ colorInactive +'">Ask question !</p>');
+		}
+		//initUI();
+		
+		initUIListener();
+
+		$('form#msg').submit(function(e)
+		{
+			var val = $("input#test").val();
+			var pseudo = $("input#pseudo").val();
+			$("#list").append('<li data-sender="'+ pseudo +'">'+ val +'</li>');
+			return false;
+		});
+	}
+);
+</script>
+
+<div id="twitch-question-ui">
+	<h3>Create question</h3>
+	<div id="change-question" class="well well-small">Clk to change question</div>
+	<h3>Add answer</h3>		
+	<div class="input-prepend">
+		<form id="add-answer">
+			<span class="add-on"><i class="icon-ok"></i></span>		
+			<input class="span2" id="add-answer-value" type="text">
+		</form>
+	</div>
+	<table id="answers-list" class="table table-condensed">
+		<thead>
+			<tr>
+				<th>Answer</th>
+				<th>Count</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<button id="btn-start" class="btn btn-danger">Click to <span class="value">start</span> asking</button>
+</div>
+<ul id="list">
+<ul>
+<form id="msg">
+<input type="text" id="test">
+<input type="text" id="pseudo">
+<input type="submit">
+</form>
