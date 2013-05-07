@@ -31,135 +31,7 @@
 	width: 223px
 }
 </style>
-<script type="text/javascript">
-$(document).ready(
-	function ()
-	{
-		/*
-		** Global
-		*/
-		var questionIsStarted = false;
-		var nbVote = 0;
-		var a_possibleAnswers = new Array();
-		var a_userAnswersCount = new Array();
-		var a_userName = new Array();
-	
-		/*
-		** Start listening answer
-		*/
-		var startListening = function ()
-		{
-			$("#list").bind("DOMNodeInserted", function(e) {
-				var insertValue = e.target.innerText.toLowerCase();
-				var user = e.target.dataset.sender;
-				var pos;
-				if ((pos = $.inArray(insertValue, a_possibleAnswers)) >= 0 && $.inArray(user, a_userName) == -1)
-				{
-					a_userAnswersCount[pos]++;
-					$(".q_"+ pos).next().text(a_userAnswersCount[pos]);
-					a_userName.push(user);
-				}
-			});
-		}
-
-		/*
-		** Stop listening answer
-		*/
-		var stopListening = function ()
-		{
-			$("#list").unbind("DOMNodeInserted");
-		}
-
-		/*
-		** Init UI Listener
-		*/
-		var initUIListener = function ()
-		{
-			/*
-			 * Start / Stop question
-			 */
-			$("#btn-start").on("click", function()
-			{
-				if (a_possibleAnswers.length > 0)
-				{					
-					questionIsStarted = !questionIsStarted;
-					if (questionIsStarted)
-					{
-						startListening();					
-						$(this).removeClass("btn-danger").addClass("btn-success");
-						$(this).find("span.value").text("stop");
-					}
-					else
-					{
-						stopListening();
-						$(this).addClass("btn-danger").removeClass("btn-success");
-						$(this).find("span.value").text("start");
-					} 
-				}
-				else
-					alert("You have to define some answers first.");
-			});
-
-			/*
-			 * Create / Edit question
-			 */
-			$('#change-question').editable(
-				function(value, settings)
-				{
-					return (value);
-				}, { 
-					event		: 'click',
-					cancel 		: 'Cancel',
-					submit		: 'OK',
-					indicator	: 'Saving..'
-		    	}
-		   	);
-
-		   	/*
-		   	 * Create answer
-		   	 */
-			$("form#add-answer").on("submit", function(e)
-			{
-				var value = $("input#add-answer-value").val();
-				var num = a_possibleAnswers.length
-				$("#answers-list tbody").append('<tr><td class="q_'+ num +'">'+ value +'</td><td class="count">0</td><td class="delete"><i class="icon-remove"></i></td></tr>');
-				a_possibleAnswers.push(value.toLowerCase());	
-				a_userAnswersCount.push(0);	   	
-				$("input#add-answer-value").val("");
-				return false;
-			});
-
-			/*
-			 * Delete answer
-			 */
-			$("table#answers-list i").on("click", function()
-			{
-				console.log("aze");
-			});
-		}
-
-
-
-		var initUI = function ()
-		{
-			$('body').prepend('<div id="twitch-question-ui"></div>');
-			$('#twitch-question-ui').append('<p id="btn-start" style="color:'+ colorInactive +'">Ask question !</p>');
-		}
-		//initUI();
-		
-		initUIListener();
-
-		$('form#msg').submit(function(e)
-		{
-			var val = $("input#test").val();
-			var pseudo = $("input#pseudo").val();
-			$("#list").append('<li data-sender="'+ pseudo +'">'+ val +'</li>');
-			return false;
-		});
-	}
-);
-</script>
-
+<script type="text/javascript" src="content.js"></script>
 <div id="twitch-question-ui">
 	<h3>Create question</h3>
 	<div id="change-question" class="well well-small">Clk to change question</div>
@@ -186,7 +58,7 @@ $(document).ready(
 <ul id="list">
 <ul>
 <form id="msg">
-<input type="text" id="test">
 <input type="text" id="pseudo">
+<input type="text" id="test">
 <input type="submit">
 </form>
